@@ -18,7 +18,7 @@ func main() {
 
 	printDefaults(client)
 
-	if err := run(os.Stdin, os.Stdout, markdownClient{client}); err != nil {
+	if err := run(os.Stdin, os.Stdout, markdownClient{client: client}); err != nil {
 		log.Printf("input error: %v", err)
 	}
 }
