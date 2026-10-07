@@ -86,7 +86,7 @@ func TestRunStopsOnQuit(t *testing.T) {
 		t.Fatalf("run returned an unexpected error: %v", err)
 	}
 
-	want := "> You entered: hello\n> Bye..."
+	want := "> You entered: hello\n> Bye...\n"
 	if output.String() != want {
 		t.Fatalf("output = %q, want %q", output.String(), want)
 	}

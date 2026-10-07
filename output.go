@@ -1,8 +1,13 @@
 package main
+
 import (
-	"fmt"
-	"harness/providers"
+	"github.com/charmbracelet/lipgloss"
 )
-func printDefaults(client providers.Client){
-	fmt.Println(client.Describe())
-}
+
+// Terminal styles; colours fall back to plain text when output is not a terminal.
+var (
+	headerStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("12")).Border(lipgloss.RoundedBorder()).Padding(0, 1)
+	promptStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("12"))
+	errorStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color("9"))
+	hintStyle   = lipgloss.NewStyle().Faint(true)
+)

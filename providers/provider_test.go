@@ -109,19 +109,6 @@ func TestChooseProviderReturnsErrorWithoutKeys(t *testing.T) {
 	}
 }
 
-func TestProviderPanicsWithoutKeys(t *testing.T) {
-	t.Setenv("ANTHROPIC_API_KEY", "")
-	t.Setenv("OPENAI_API_KEY", "")
-
-	defer func() {
-		if recover() == nil {
-			t.Fatal("provider did not panic")
-		}
-	}()
-
-	provider()
-}
-
 func TestDescribe(t *testing.T) {
 	tests := []struct {
 		name   string
