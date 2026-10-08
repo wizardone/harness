@@ -1,7 +1,9 @@
 package providers
+
 import (
-	"fmt"
 	"context"
+	"fmt"
+
 	"github.com/openai/openai-go"
 )
 
@@ -18,7 +20,7 @@ func newOpenAICLient() OpenAIClient {
 	return OpenAIClient{client: openai.NewClient(), model: openAIModel}
 }
 
-func (c OpenAIClient) Describe() string {
+func (c OpenAIClient) Header() string {
 	return fmt.Sprintf("Provider: OpenAI | Model: %s", c.model)
 }
 

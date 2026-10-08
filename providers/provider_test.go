@@ -109,7 +109,7 @@ func TestChooseProviderReturnsErrorWithoutKeys(t *testing.T) {
 	}
 }
 
-func TestDescribe(t *testing.T) {
+func TestHeader(t *testing.T) {
 	tests := []struct {
 		name   string
 		client Client
@@ -121,8 +121,8 @@ func TestDescribe(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.client.Describe(); got != tt.want {
-				t.Fatalf("Describe() = %q, want %q", got, tt.want)
+			if got := tt.client.Header(); got != tt.want {
+				t.Fatalf("Header() = %q, want %q", got, tt.want)
 			}
 		})
 	}

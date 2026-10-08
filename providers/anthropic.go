@@ -1,8 +1,10 @@
 package providers
+
 import (
-	"fmt"
 	"context"
+	"fmt"
 	"strings"
+
 	"github.com/anthropics/anthropic-sdk-go"
 )
 
@@ -43,6 +45,6 @@ func (c AnthropicClient) Send(ctx context.Context, message string) (string, erro
 	return reply.String(), nil
 }
 
-func (c AnthropicClient) Describe() string {
+func (c AnthropicClient) Header() string {
 	return fmt.Sprintf("Provider: Anthropic | Model: %s | Max tokens: %d", c.model, 16000)
 }

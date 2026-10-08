@@ -1,13 +1,14 @@
 package providers
+
 import (
+	"context"
 	"fmt"
 	"os"
-	"context"
 )
 
 type Client interface {
 	Send(ctx context.Context, message string) (string, error)
-	Describe() string
+	Header() string
 }
 
 func isEnvSet(key string) bool {

@@ -17,7 +17,7 @@ func (f fakeClient) Send(ctx context.Context, prompt string) (string, error) {
 	return f.send(ctx, prompt)
 }
 
-func (f fakeClient) Describe() string { return "fake" }
+func (f fakeClient) Header() string { return "fake" }
 
 func echoReply(_ context.Context, prompt string) (string, error) {
 	return "You entered: " + prompt, nil
