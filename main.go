@@ -1,13 +1,12 @@
 package main
 
 import (
-	"bufio"
-	"context"
-	"fmt"
 	"harness/providers"
 	"io"
 	"log"
 	"os"
+
+	tea "github.com/charmbracelet/bubbletea"
 )
 
 func main() {
@@ -23,29 +22,11 @@ func main() {
 	}
 }
 
-// run reads prompts from in until EOF or "quit", writing each reply to out.
+// run reads prompts from in until Ctrl+C, Ctrl+D or "quit", writing each reply to out.
+//   - in: where key presses are read from.
+//   - out: where the prompt, options and replies are drawn.
+//   - client: sends each submitted prompt to the model.
 func run(in io.Reader, out io.Writer, client providers.Client) error {
-	scanner := bufio.NewScanner(in)
-
-	for {
-		fmt.Fprint(out, promptStyle.Render("> "))
-
-		if !scanner.Scan() {
-			return scanner.Err()
-		}
-
-		prompt := scanner.Text()
-		if prompt == "quit" {
-			fmt.Fprintln(out, hintStyle.Render("Bye..."))
-			return nil
-		}
-
-		answer, err := client.Send(context.Background(), prompt)
-		if err != nil {
-			fmt.Fprintln(out, errorStyle.Render(fmt.Sprintf("error: %v", err)))
-			continue
-		}
-
-		fmt.Fprintln(out, answer)
-	}
+	_, err := tea.NewProgram(newChatModel(client), tea.WithInput(in), tea.WithOutput(out)).Run()
+	return err
 }

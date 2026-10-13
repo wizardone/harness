@@ -11,3 +11,6 @@ var (
 	errorStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color("9"))
 	hintStyle   = lipgloss.NewStyle().Faint(true)
 )
+
+// promptMarker starts the prompt line and marks the highlighted option.
+const promptMarker = "> "
