@@ -8,7 +8,14 @@ import (
 
 type Client interface {
 	Send(ctx context.Context, message string) (string, error)
-	Header() string
+	Header() Header
+}
+
+// Header describes the provider for the start-up header.
+type Header struct {
+	Provider  string
+	Model     string
+	MaxTokens int // 0 when the provider sets no limit
 }
 
 func isEnvSet(key string) bool {

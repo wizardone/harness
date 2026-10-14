@@ -2,12 +2,9 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"harness/providers"
-	"os"
 
 	"github.com/charmbracelet/glamour"
-	"golang.org/x/term"
 )
 
 // markdownClient wraps a Client and renders its replies as Markdown for the terminal.
@@ -23,21 +20,10 @@ func (markdown markdownClient) Send(ctx context.Context, message string) (string
 	if err != nil {
 		return "", err
 	}
-	return glamour.Render(answer, "light")
+	return glamour.Render(answer, markdownStyle)
 }
 
 // Header returns the wrapped client's header unchanged.
-func (markdown markdownClient) Header() string {
+func (markdown markdownClient) Header() providers.Header {
 	return markdown.client.Header()
-}
-
-// printDefaults prints the provider details in a header box spanning the terminal width, with a hint on how to exit.
-//   - markdown: the wrapped client whose header is shown.
-func printDefaults(markdown markdownClient){
-	header := headerStyle
-	if width, _, err := term.GetSize(int(os.Stdout.Fd())); err == nil {
-		header = header.Width(width - header.GetHorizontalBorderSize())
-	}
-	fmt.Println(header.Render(markdown.Header()))
-	fmt.Println(hintStyle.Render("Type quit to exit."))
 }

@@ -45,6 +45,6 @@ func (c AnthropicClient) Send(ctx context.Context, message string) (string, erro
 	return reply.String(), nil
 }
 
-func (c AnthropicClient) Header() string {
-	return fmt.Sprintf("Provider: Anthropic | Model: %s | Max tokens: %d", c.model, 16000)
+func (c AnthropicClient) Header() Header {
+	return Header{Provider: "Anthropic", Model: c.model, MaxTokens: 16000}
 }

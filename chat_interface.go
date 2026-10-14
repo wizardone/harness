@@ -14,6 +14,7 @@ type chatModel struct {
 	input    textinput.Model
 	menu     optionMenu
 	quitting bool
+	thinking bool
 }
 
 // newChatModel returns a model with a focused prompt.
@@ -35,6 +36,7 @@ func (chat chatModel) Init() tea.Cmd {
 func (chat chatModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case replyMsg:
+		chat.thinking = false
 		return chat, tea.Println(replyText(msg))
 	case tea.KeyMsg:
 		return chat.handleKey(msg)
@@ -48,6 +50,9 @@ func (chat chatModel) handleKey(key tea.KeyMsg) (tea.Model, tea.Cmd) {
 	switch name := key.String(); {
 	case name == "ctrl+c" || name == "ctrl+d":
 		return chat, tea.Quit
+	case chat.menu.open && name == "enter" && options[chat.menu.cursor] == "Quit":
+      	chat.quitting = true
+      	return chat, tea.Quit
 	case chat.menu.open || name == ":" && chat.input.Value() == "":
 		chat.menu = chat.menu.navigate(name)
 		return chat, nil
@@ -65,6 +70,7 @@ func (chat chatModel) submit() (tea.Model, tea.Cmd) {
 		chat.quitting = true
 		return chat, tea.Quit
 	}
+	chat.thinking = true
 	return chat, tea.Sequence(tea.Println(chat.input.Prompt+prompt), send(chat.client, prompt))
 }
 
@@ -81,13 +87,16 @@ func (chat chatModel) View() string {
 	if chat.quitting {
 		return hintStyle.Render("Bye...") + "\n"
 	}
+	if chat.thinking {
+		return hintStyle.Render("Thinking...") + "\n"
+	}
 	if chat.menu.open {
 		return chat.input.View() + "\n" + renderOptions(chat.menu.cursor)
 	}
 	return chat.input.View()
 }
 
-var options = []string{"Provider", "Model"}
+var options = []string{"Provider", "Model", "Quit"}
 
 // optionMenu holds whether the options list is shown and which option is highlighted.
 type optionMenu struct {

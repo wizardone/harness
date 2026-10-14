@@ -113,16 +113,16 @@ func TestHeader(t *testing.T) {
 	tests := []struct {
 		name   string
 		client Client
-		want   string
+		want   Header
 	}{
-		{"anthropic", newAnthropicClient(), "Provider: Anthropic | Model: claude-opus-5-5 | Max tokens: 16000"},
-		{"openai", newOpenAICLient(), "Provider: OpenAI | Model: gpt-5.6-sol"},
+		{"anthropic", newAnthropicClient(), Header{Provider: "Anthropic", Model: "claude-opus-5-5", MaxTokens: 16000}},
+		{"openai", newOpenAICLient(), Header{Provider: "OpenAI", Model: "gpt-5.6-sol"}},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.client.Header(); got != tt.want {
-				t.Fatalf("Header() = %q, want %q", got, tt.want)
+				t.Fatalf("Header() = %+v, want %+v", got, tt.want)
 			}
 		})
 	}

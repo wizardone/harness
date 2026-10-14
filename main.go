@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"harness/providers"
 	"io"
 	"log"
@@ -15,7 +16,12 @@ func main() {
 		log.Fatalf("provider error: %v", err)
 	}
 
-	printDefaults(markdownClient{client: client})
+	dir, err := os.Getwd()
+	if err != nil {
+		log.Fatalf("working directory: %v", err)
+	}
+
+	fmt.Println(renderHeader(client.Header(), dir))
 
 	if err := run(os.Stdin, os.Stdout, markdownClient{client: client}); err != nil {
 		log.Printf("input error: %v", err)

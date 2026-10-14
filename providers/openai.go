@@ -20,8 +20,8 @@ func newOpenAICLient() OpenAIClient {
 	return OpenAIClient{client: openai.NewClient(), model: openAIModel}
 }
 
-func (c OpenAIClient) Header() string {
-	return fmt.Sprintf("Provider: OpenAI | Model: %s", c.model)
+func (c OpenAIClient) Header() Header {
+	return Header{Provider: "OpenAI", Model: c.model}
 }
 
 func (c OpenAIClient) Send(ctx context.Context, message string) (string, error) {

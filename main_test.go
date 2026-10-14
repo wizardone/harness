@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"harness/providers"
 	"strings"
 	"testing"
 )
@@ -21,7 +22,9 @@ func (f fakeClient) Send(ctx context.Context, prompt string) (string, error) {
 }
 
 // Header returns a fixed header.
-func (f fakeClient) Header() string { return "fake" }
+func (f fakeClient) Header() providers.Header {
+	return providers.Header{Provider: "Fake", Model: "fake"}
+}
 
 // echoReply answers with the prompt it was given.
 //   - prompt: the text to echo back.
