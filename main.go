@@ -23,7 +23,7 @@ func main() {
 
 	fmt.Println(renderHeader(client.Header(), dir))
 
-	if err := run(os.Stdin, os.Stdout, markdownClient{client: client}); err != nil {
+	if err := run(os.Stdin, os.Stdout, client); err != nil {
 		log.Printf("input error: %v", err)
 	}
 }
