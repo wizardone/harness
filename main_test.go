@@ -11,13 +11,13 @@ import (
 
 // fakeClient satisfies Client by delegating Send to a function.
 type fakeClient struct {
-	send func(ctx context.Context, prompt string) (string, error)
+	send func(ctx context.Context, prompt string) (providers.Reply, error)
 }
 
 // Send returns whatever the fake's send function returns.
 //   - ctx: passed through to the send function.
 //   - prompt: passed through to the send function.
-func (f fakeClient) Send(ctx context.Context, prompt string) (string, error) {
+func (f fakeClient) Send(ctx context.Context, prompt string) (providers.Reply, error) {
 	return f.send(ctx, prompt)
 }
 
@@ -28,14 +28,14 @@ func (f fakeClient) Header() providers.Header {
 
 // echoReply answers with the prompt it was given.
 //   - prompt: the text to echo back.
-func echoReply(_ context.Context, prompt string) (string, error) {
-	return "You entered: " + prompt, nil
+func echoReply(_ context.Context, prompt string) (providers.Reply, error) {
+	return providers.Reply{Text: "You entered: " + prompt}, nil
 }
 
 func TestRunStopsOnQuit(t *testing.T) {
 	var output bytes.Buffer
 	calls := 0
-	counting := func(ctx context.Context, prompt string) (string, error) {
+	counting := func(ctx context.Context, prompt string) (providers.Reply, error) {
 		calls++
 		return echoReply(ctx, prompt)
 	}

@@ -24,7 +24,7 @@ func (c OpenAIClient) Header() Header {
 	return Header{Provider: "OpenAI", Model: c.model}
 }
 
-func (c OpenAIClient) Send(ctx context.Context, message string) (string, error) {
+func (c OpenAIClient) Send(ctx context.Context, message string) (Reply, error) {
 	resp, err := c.client.Chat.Completions.New(ctx, openai.ChatCompletionNewParams{
 		Model: openAIModel,
 		Messages: []openai.ChatCompletionMessageParamUnion{
@@ -32,10 +32,10 @@ func (c OpenAIClient) Send(ctx context.Context, message string) (string, error) 
 		},
 	})
 	if err != nil {
-		return "", err
+		return Reply{}, err
 	}
 	if len(resp.Choices) == 0 {
-		return "", fmt.Errorf("openai returned no choices")
+		return Reply{}, fmt.Errorf("openai returned no choices")
 	}
-	return resp.Choices[0].Message.Content, nil
+	return Reply{Text: resp.Choices[0].Message.Content}, nil
 }

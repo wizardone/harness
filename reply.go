@@ -11,7 +11,7 @@ import (
 
 // replyMsg carries the model's reply to a prompt, or the error from sending it.
 type replyMsg struct {
-	answer string
+	reply providers.Reply
 	err    error
 }
 
@@ -20,20 +20,23 @@ type replyMsg struct {
 //   - prompt: the text to send.
 func send(client providers.Client, prompt string) tea.Cmd {
 	return func() tea.Msg {
-		answer, err := client.Send(context.Background(), prompt)
-		return replyMsg{answer: answer, err: err}
+		reply, err := client.Send(context.Background(), prompt)
+		return replyMsg{reply: reply, err: err}
 	}
 }
 
-// replyText returns the reply rendered as Markdown, or the styled error when sending failed.
+// replyText returns the reply rendered as Markdown with a faint token count underneath,
+// or the styled error when sending failed.
 // The reply is shown as plain text if it cannot be rendered.
 //   - reply: the outcome of sending a prompt.
 func replyText(reply replyMsg) string {
 	if reply.err != nil {
 		return errorStyle.Render(fmt.Sprintf("error: %v", reply.err))
 	}
-	if rendered, err := glamour.Render(reply.answer, markdownStyle); err == nil {
-		return rendered
+	text := reply.reply.Text
+	if rendered, err := glamour.Render(text, markdownStyle); err == nil {
+		text = rendered
 	}
-	return reply.answer
+	usage := fmt.Sprintf("%d in · %d out", reply.reply.InputTokens, reply.reply.OutputTokens)
+	return text + "\n" + hintStyle.Render(usage)
 }

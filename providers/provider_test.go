@@ -141,13 +141,14 @@ func TestAnthropicSendJoinsTextBlocks(t *testing.T) {
 		"usage": {"input_tokens": 1, "output_tokens": 2}
 	}`, &gotModel)
 
-	answer, err := testAnthropicClient(server.URL).Send(context.Background(), "hi")
+	reply, err := testAnthropicClient(server.URL).Send(context.Background(), "hi")
 
 	if err != nil {
 		t.Fatalf("Send returned an unexpected error: %v", err)
 	}
-	if answer != "Hello world" {
-		t.Fatalf("answer = %q, want %q", answer, "Hello world")
+	want := Reply{Text: "Hello world", InputTokens: 1, OutputTokens: 2}
+	if reply != want {
+		t.Fatalf("reply = %+v, want %+v", reply, want)
 	}
 	if gotModel != anthropicModel {
 		t.Fatalf("model = %q, want %q", gotModel, anthropicModel)
@@ -194,13 +195,13 @@ func TestOpenAISendReturnsFirstChoice(t *testing.T) {
 		]
 	}`, &gotModel)
 
-	answer, err := testOpenAIClient(server.URL).Send(context.Background(), "hi")
+	reply, err := testOpenAIClient(server.URL).Send(context.Background(), "hi")
 
 	if err != nil {
 		t.Fatalf("Send returned an unexpected error: %v", err)
 	}
-	if answer != "Hello" {
-		t.Fatalf("answer = %q, want %q", answer, "Hello")
+	if reply.Text != "Hello" {
+		t.Fatalf("reply.Text = %q, want %q", reply.Text, "Hello")
 	}
 	if gotModel != openAIModel {
 		t.Fatalf("model = %q, want %q", gotModel, openAIModel)

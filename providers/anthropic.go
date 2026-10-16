@@ -10,6 +10,7 @@ import (
 
 const (
 	anthropicModel = "claude-opus-5-5"
+	anthropicMaxTokens = 16000
 )
 
 type AnthropicClient struct {
@@ -21,19 +22,19 @@ func newAnthropicClient() AnthropicClient {
 	return AnthropicClient{client: anthropic.NewClient(), model: anthropicModel}
 }
 
-func (c AnthropicClient) Send(ctx context.Context, message string) (string, error) {
+func (c AnthropicClient) Send(ctx context.Context, message string) (Reply, error) {
 	resp, err := c.client.Messages.New(ctx, anthropic.MessageNewParams{
 		Model:     anthropicModel,
-		MaxTokens: 16000,
+		MaxTokens: anthropicMaxTokens,
 		Messages: []anthropic.MessageParam{
 			anthropic.NewUserMessage(anthropic.NewTextBlock(message)),
 		},
 	})
 	if err != nil {
-		return "", err
+		return Reply{}, err
 	}
 	if resp.StopReason == anthropic.StopReasonRefusal {
-		return "", fmt.Errorf("anthropic refused the request: %s", resp.StopDetails.Category)
+		return Reply{}, fmt.Errorf("anthropic refused the request: %s", resp.StopDetails.Category)
 	}
 
 	var reply strings.Builder
@@ -42,9 +43,9 @@ func (c AnthropicClient) Send(ctx context.Context, message string) (string, erro
 			reply.WriteString(text.Text)
 		}
 	}
-	return reply.String(), nil
+	return Reply{Text: reply.String(), InputTokens: resp.Usage.InputTokens, OutputTokens: resp.Usage.OutputTokens}, nil
 }
 
 func (c AnthropicClient) Header() Header {
-	return Header{Provider: "Anthropic", Model: c.model, MaxTokens: 16000}
+	return Header{Provider: "Anthropic", Model: c.model, MaxTokens: anthropicMaxTokens}
 }

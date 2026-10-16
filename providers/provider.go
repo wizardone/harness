@@ -7,7 +7,7 @@ import (
 )
 
 type Client interface {
-	Send(ctx context.Context, message string) (string, error)
+	Send(ctx context.Context, message string) (Reply, error)
 	Header() Header
 }
 
@@ -16,6 +16,13 @@ type Header struct {
 	Provider  string
 	Model     string
 	MaxTokens int // 0 when the provider sets no limit
+}
+
+// Reply describes the reply format an LLM returns
+type Reply struct {
+	Text string
+	InputTokens int64
+	OutputTokens int64
 }
 
 func isEnvSet(key string) bool {
