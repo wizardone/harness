@@ -8,9 +8,9 @@ import (
 )
 
 func TestSendReportsReply(t *testing.T) {
-	msg := send(fakeClient{send: echoReply}, "hello")()
+	msg := send(fakeClient{send: echoReply}, []string{"hi", "hello there"}, "hello")()
 
-	want := replyMsg{reply: providers.Reply{Text: "You entered: hello"}}
+	want := replyMsg{reply: providers.Reply{Text: "You entered: hello"}, prompt: "hello"}
 	if msg != want {
 		t.Fatalf("msg = %+v, want %+v", msg, want)
 	}

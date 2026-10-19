@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"harness/providers"
+	"slices"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/glamour"
@@ -13,15 +14,17 @@ import (
 type replyMsg struct {
 	reply providers.Reply
 	err    error
+	prompt string
 }
 
-// send returns a command that sends the prompt to the model and reports the reply.
-//   - client: sends the prompt to the model.
-//   - prompt: the text to send.
-func send(client providers.Client, prompt string) tea.Cmd {
+// send returns a command that sends the conversation with the new prompt to the model and reports the reply.
+//   - client: sends the conversation to the model.
+//   - history: the earlier prompts and replies, alternating; copied so the command has its own slice.
+//   - prompt: the new text to send.
+func send(client providers.Client, history []string, prompt string) tea.Cmd {
 	return func() tea.Msg {
-		reply, err := client.Send(context.Background(), prompt)
-		return replyMsg{reply: reply, err: err}
+		reply, err := client.Send(context.Background(), append(slices.Clone(history), prompt))
+		return replyMsg{reply: reply, err: err, prompt: prompt}
 	}
 }
 

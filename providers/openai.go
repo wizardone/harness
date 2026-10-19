@@ -24,12 +24,21 @@ func (c OpenAIClient) Header() Header {
 	return Header{Provider: "OpenAI", Model: c.model}
 }
 
-func (c OpenAIClient) Send(ctx context.Context, message string) (Reply, error) {
+// Send sends the conversation to OpenAI and returns the first choice of the reply.
+//   - ctx: cancels or times out the request.
+//   - history: user prompts at even indexes and model replies at odd ones, ending with the new prompt.
+func (c OpenAIClient) Send(ctx context.Context, history []string) (Reply, error) {
+	messages := make([]openai.ChatCompletionMessageParamUnion, len(history))
+	for i, text := range history {
+		if i%2 == 0 {
+			messages[i] = openai.UserMessage(text)
+		} else {
+			messages[i] = openai.AssistantMessage(text)
+		}
+	}
 	resp, err := c.client.Chat.Completions.New(ctx, openai.ChatCompletionNewParams{
-		Model: openAIModel,
-		Messages: []openai.ChatCompletionMessageParamUnion{
-			openai.UserMessage(message),
-		},
+		Model:    openAIModel,
+		Messages: messages,
 	})
 	if err != nil {
 		return Reply{}, err

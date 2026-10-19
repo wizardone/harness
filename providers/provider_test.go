@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"slices"
 	"strings"
 	"testing"
 
@@ -27,6 +28,31 @@ func fakeAPI(t *testing.T, status int, body string, gotModel *string) *httptest.
 		*gotModel = req.Model
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(status)
+		w.Write([]byte(body))
+	}))
+	t.Cleanup(server.Close)
+	return server
+}
+
+// turnsAPI serves body and records the role of each message in the request.
+//   - t: fails the test if the request cannot be decoded.
+//   - body: the JSON response to serve.
+//   - gotRoles: receives the role of each message, in order.
+func turnsAPI(t *testing.T, body string, gotRoles *[]string) *httptest.Server {
+	t.Helper()
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var req struct {
+			Messages []struct {
+				Role string `json:"role"`
+			} `json:"messages"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			t.Errorf("decode request: %v", err)
+		}
+		for _, message := range req.Messages {
+			*gotRoles = append(*gotRoles, message.Role)
+		}
+		w.Header().Set("Content-Type", "application/json")
 		w.Write([]byte(body))
 	}))
 	t.Cleanup(server.Close)
@@ -141,7 +167,7 @@ func TestAnthropicSendJoinsTextBlocks(t *testing.T) {
 		"usage": {"input_tokens": 1, "output_tokens": 2}
 	}`, &gotModel)
 
-	reply, err := testAnthropicClient(server.URL).Send(context.Background(), "hi")
+	reply, err := testAnthropicClient(server.URL).Send(context.Background(), []string{"hi"})
 
 	if err != nil {
 		t.Fatalf("Send returned an unexpected error: %v", err)
@@ -165,7 +191,7 @@ func TestAnthropicSendReturnsRefusalError(t *testing.T) {
 		"usage": {"input_tokens": 1, "output_tokens": 0}
 	}`, &gotModel)
 
-	_, err := testAnthropicClient(server.URL).Send(context.Background(), "hi")
+	_, err := testAnthropicClient(server.URL).Send(context.Background(), []string{"hi"})
 
 	if err == nil || !strings.Contains(err.Error(), "cyber") {
 		t.Fatalf("err = %v, want a refusal error naming the category", err)
@@ -179,7 +205,7 @@ func TestAnthropicSendReturnsAPIErrors(t *testing.T) {
 		"error": {"type": "invalid_request_error", "message": "bad request"}
 	}`, &gotModel)
 
-	_, err := testAnthropicClient(server.URL).Send(context.Background(), "hi")
+	_, err := testAnthropicClient(server.URL).Send(context.Background(), []string{"hi"})
 
 	if err == nil {
 		t.Fatal("Send returned nil, want an API error")
@@ -195,7 +221,7 @@ func TestOpenAISendReturnsFirstChoice(t *testing.T) {
 		]
 	}`, &gotModel)
 
-	reply, err := testOpenAIClient(server.URL).Send(context.Background(), "hi")
+	reply, err := testOpenAIClient(server.URL).Send(context.Background(), []string{"hi"})
 
 	if err != nil {
 		t.Fatalf("Send returned an unexpected error: %v", err)
@@ -215,7 +241,7 @@ func TestOpenAISendReturnsErrorWithoutChoices(t *testing.T) {
 		"choices": []
 	}`, &gotModel)
 
-	_, err := testOpenAIClient(server.URL).Send(context.Background(), "hi")
+	_, err := testOpenAIClient(server.URL).Send(context.Background(), []string{"hi"})
 
 	if err == nil {
 		t.Fatal("Send returned nil, want an error for empty choices")
@@ -228,9 +254,47 @@ func TestOpenAISendReturnsAPIErrors(t *testing.T) {
 		"error": {"message": "bad request", "type": "invalid_request_error"}
 	}`, &gotModel)
 
-	_, err := testOpenAIClient(server.URL).Send(context.Background(), "hi")
+	_, err := testOpenAIClient(server.URL).Send(context.Background(), []string{"hi"})
 
 	if err == nil {
 		t.Fatal("Send returned nil, want an API error")
+	}
+}
+
+func TestAnthropicSendAlternatesRoles(t *testing.T) {
+	var gotRoles []string
+	server := turnsAPI(t, `{
+		"id": "msg_1", "type": "message", "role": "assistant", "model": "claude-opus-5-5",
+		"content": [{"type": "text", "text": "ok"}],
+		"stop_reason": "end_turn",
+		"usage": {"input_tokens": 1, "output_tokens": 1}
+	}`, &gotRoles)
+
+	_, err := testAnthropicClient(server.URL).Send(context.Background(), []string{"q1", "a1", "q2"})
+
+	if err != nil {
+		t.Fatalf("Send returned an unexpected error: %v", err)
+	}
+	if want := []string{"user", "assistant", "user"}; !slices.Equal(gotRoles, want) {
+		t.Fatalf("roles = %v, want %v", gotRoles, want)
+	}
+}
+
+func TestOpenAISendAlternatesRoles(t *testing.T) {
+	var gotRoles []string
+	server := turnsAPI(t, `{
+		"id": "chatcmpl-1", "object": "chat.completion", "created": 0, "model": "gpt-5.6-sol",
+		"choices": [
+			{"index": 0, "finish_reason": "stop", "message": {"role": "assistant", "content": "ok"}}
+		]
+	}`, &gotRoles)
+
+	_, err := testOpenAIClient(server.URL).Send(context.Background(), []string{"q1", "a1", "q2"})
+
+	if err != nil {
+		t.Fatalf("Send returned an unexpected error: %v", err)
+	}
+	if want := []string{"user", "assistant", "user"}; !slices.Equal(gotRoles, want) {
+		t.Fatalf("roles = %v, want %v", gotRoles, want)
 	}
 }

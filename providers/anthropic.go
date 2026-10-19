@@ -22,13 +22,22 @@ func newAnthropicClient() AnthropicClient {
 	return AnthropicClient{client: anthropic.NewClient(), model: anthropicModel}
 }
 
-func (c AnthropicClient) Send(ctx context.Context, message string) (Reply, error) {
+// Send sends the conversation to Claude and returns the joined text of the reply with its token usage.
+//   - ctx: cancels or times out the request.
+//   - history: user prompts at even indexes and model replies at odd ones, ending with the new prompt.
+func (c AnthropicClient) Send(ctx context.Context, history []string) (Reply, error) {
+	messages := make([]anthropic.MessageParam, len(history))
+	for i, text := range history {
+		if i%2 == 0 {
+			messages[i] = anthropic.NewUserMessage(anthropic.NewTextBlock(text))
+		} else {
+			messages[i] = anthropic.NewAssistantMessage(anthropic.NewTextBlock(text))
+		}
+	}
 	resp, err := c.client.Messages.New(ctx, anthropic.MessageNewParams{
 		Model:     anthropicModel,
 		MaxTokens: anthropicMaxTokens,
-		Messages: []anthropic.MessageParam{
-			anthropic.NewUserMessage(anthropic.NewTextBlock(message)),
-		},
+		Messages:  messages,
 	})
 	if err != nil {
 		return Reply{}, err

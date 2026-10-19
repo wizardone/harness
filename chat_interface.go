@@ -15,6 +15,8 @@ type chatModel struct {
 	menu     optionMenu
 	quitting bool
 	thinking bool
+	width    int
+	history []string
 }
 
 // newChatModel returns a model with a focused prompt.
@@ -37,9 +39,14 @@ func (chat chatModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case replyMsg:
 		chat.thinking = false
+		if msg.err == nil {
+			chat.history = append(chat.history, msg.prompt, msg.reply.Text)
+		}
 		return chat, tea.Println(replyText(msg))
 	case tea.KeyMsg:
 		return chat.handleKey(msg)
+	case tea.WindowSizeMsg:
+		chat.width = msg.Width
 	}
 	return chat.updateInput(msg)
 }
@@ -71,7 +78,7 @@ func (chat chatModel) submit() (tea.Model, tea.Cmd) {
 		return chat, tea.Quit
 	}
 	chat.thinking = true
-	return chat, tea.Sequence(tea.Println(chat.input.Prompt+prompt), send(chat.client, prompt))
+	return chat, tea.Sequence(tea.Println(chat.input.Prompt+prompt), send(chat.client, chat.history, prompt))
 }
 
 // updateInput passes the message to the prompt, for typing and cursor blinking.
@@ -90,10 +97,18 @@ func (chat chatModel) View() string {
 	if chat.thinking {
 		return hintStyle.Render("Thinking...") + "\n"
 	}
+	prompt := renderPromptArea(chat.input.View(), chat.width)
 	if chat.menu.open {
-		return chat.input.View() + "\n" + renderOptions(chat.menu.cursor)
+		return prompt + "\n" + renderOptions(chat.menu.cursor)
 	}
-	return chat.input.View()
+	return prompt
+}
+
+// renderPromptArea returns the prompt with a line above and below it.
+//   - prompt: the rendered prompt line.
+//   - width: the terminal width the lines span; 0 until the size is known, when they span the prompt.
+func renderPromptArea(prompt string, width int) string {
+	return promptAreaStyle.Width(width).Render(prompt)
 }
 
 var options = []string{"Provider", "Model", "Quit"}

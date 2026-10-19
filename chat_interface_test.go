@@ -96,6 +96,14 @@ func TestRenderOptionsHighlightsCursor(t *testing.T) {
 	}
 }
 
+func TestRenderPromptAreaDrawsLinesAboveAndBelow(t *testing.T) {
+	want := "──────\n> hi  \n──────"
+
+	if got := renderPromptArea("> hi", 6); got != want {
+		t.Fatalf("renderPromptArea = %q, want %q", got, want)
+	}
+}
+
 func TestNavigateMovesAndWraps(t *testing.T) {
 	menu := optionMenu{open: true}.navigate("up")
 

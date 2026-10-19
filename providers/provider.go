@@ -7,7 +7,11 @@ import (
 )
 
 type Client interface {
-	Send(ctx context.Context, message string) (Reply, error)
+	// Send sends the conversation and returns the model's next reply.
+	//   - ctx: cancels or times out the request.
+	//   - history: the turns so far, user prompts at even indexes and model replies at odd ones,
+	//     ending with the new prompt.
+	Send(ctx context.Context, history []string) (Reply, error)
 	Header() Header
 }
 

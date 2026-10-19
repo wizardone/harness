@@ -11,14 +11,14 @@ import (
 
 // fakeClient satisfies Client by delegating Send to a function.
 type fakeClient struct {
-	send func(ctx context.Context, prompt string) (providers.Reply, error)
+	send func(ctx context.Context, history []string) (providers.Reply, error)
 }
 
 // Send returns whatever the fake's send function returns.
 //   - ctx: passed through to the send function.
-//   - prompt: passed through to the send function.
-func (f fakeClient) Send(ctx context.Context, prompt string) (providers.Reply, error) {
-	return f.send(ctx, prompt)
+//   - history: passed through to the send function.
+func (f fakeClient) Send(ctx context.Context, history []string) (providers.Reply, error) {
+	return f.send(ctx, history)
 }
 
 // Header returns a fixed header.
@@ -26,18 +26,18 @@ func (f fakeClient) Header() providers.Header {
 	return providers.Header{Provider: "Fake", Model: "fake"}
 }
 
-// echoReply answers with the prompt it was given.
-//   - prompt: the text to echo back.
-func echoReply(_ context.Context, prompt string) (providers.Reply, error) {
-	return providers.Reply{Text: "You entered: " + prompt}, nil
+// echoReply answers with the latest prompt it was given.
+//   - history: the conversation, ending with the prompt to echo back.
+func echoReply(_ context.Context, history []string) (providers.Reply, error) {
+	return providers.Reply{Text: "You entered: " + history[len(history)-1]}, nil
 }
 
 func TestRunStopsOnQuit(t *testing.T) {
 	var output bytes.Buffer
 	calls := 0
-	counting := func(ctx context.Context, prompt string) (providers.Reply, error) {
+	counting := func(ctx context.Context, history []string) (providers.Reply, error) {
 		calls++
-		return echoReply(ctx, prompt)
+		return echoReply(ctx, history)
 	}
 
 	err := run(strings.NewReader("quit\r"), &output, fakeClient{send: counting})
