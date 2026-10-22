@@ -2,7 +2,6 @@ package main
 
 import (
 	"harness/providers"
-	"strings"
 
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
@@ -42,7 +41,7 @@ func (chat chatModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if msg.err == nil {
 			chat.history = append(chat.history, msg.prompt, msg.reply.Text)
 		}
-		return chat, tea.Println(replyText(msg))
+		return chat, tea.Println(renderReply(msg))
 	case tea.KeyMsg:
 		return chat.handleKey(msg)
 	case tea.WindowSizeMsg:
@@ -78,7 +77,8 @@ func (chat chatModel) submit() (tea.Model, tea.Cmd) {
 		return chat, tea.Quit
 	}
 	chat.thinking = true
-	return chat, tea.Sequence(tea.Println(renderSentPrompt(prompt)), send(chat.client, chat.history, prompt))
+	turn := len(chat.history)/2 + 1
+	return chat, tea.Sequence(tea.Println(renderSentPrompt(prompt, turn, chat.width)), send(chat.client, chat.history, prompt))
 }
 
 // updateInput passes the message to the prompt, for typing and cursor blinking.
@@ -104,19 +104,6 @@ func (chat chatModel) View() string {
 	return prompt
 }
 
-// renderSentPrompt returns a sent prompt in reverse video, so it stands out when scrolling back.
-//   - prompt: the text that was sent.
-func renderSentPrompt(prompt string) string {
-	return sentPromptStyle.Render(promptMarker + prompt)
-}
-
-// renderPromptArea returns the prompt with a line above and below it.
-//   - prompt: the rendered prompt line.
-//   - width: the terminal width the lines span; 0 until the size is known, when they span the prompt.
-func renderPromptArea(prompt string, width int) string {
-	return promptAreaStyle.Width(width).Render(prompt)
-}
-
 var options = []string{"Provider", "Model", "History", "Quit"}
 
 // optionMenu holds whether the options list is shown and which option is highlighted.
@@ -140,17 +127,4 @@ func (menu optionMenu) navigate(key string) optionMenu {
 		menu.open = false
 	}
 	return menu
-}
-
-// renderOptions returns the options one per line, highlighting the one under the cursor.
-//   - cursor: the index of the highlighted option.
-func renderOptions(cursor int) string {
-	lines := make([]string, len(options))
-	for i, option := range options {
-		lines[i] = hintStyle.Render("  " + option)
-		if i == cursor {
-			lines[i] = promptStyle.Render(promptMarker + option)
-		}
-	}
-	return strings.Join(lines, "\n")
 }

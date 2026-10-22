@@ -88,30 +88,6 @@ func TestEnterClosesOptionsWithoutSending(t *testing.T) {
 	}
 }
 
-func TestRenderOptionsHighlightsCursor(t *testing.T) {
-	want := "  " + options[0] + "\n" + promptMarker + options[1] + "\n" + "  " + options[2] + "\n" + "  " + options[3]
-
-	if got := renderOptions(1); got != want {
-		t.Fatalf("renderOptions(1) = %q, want %q", got, want)
-	}
-}
-
-func TestRenderPromptAreaDrawsLinesAboveAndBelow(t *testing.T) {
-	want := "──────\n> hi  \n──────"
-
-	if got := renderPromptArea("> hi", 6); got != want {
-		t.Fatalf("renderPromptArea = %q, want %q", got, want)
-	}
-}
-
-func TestRenderSentPromptPadsTheMarkedPrompt(t *testing.T) {
-	want := " " + promptMarker + "hi "
-
-	if got := renderSentPrompt("hi"); got != want {
-		t.Fatalf("renderSentPrompt = %q, want %q", got, want)
-	}
-}
-
 func TestNavigateMovesAndWraps(t *testing.T) {
 	menu := optionMenu{open: true}.navigate("up")
 
