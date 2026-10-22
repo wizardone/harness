@@ -14,8 +14,6 @@ var (
 	hintStyle   = lipgloss.NewStyle().Faint(true)
 	// promptAreaStyle draws a line above and below the prompt so it stands out from the replies.
 	promptAreaStyle = lipgloss.NewStyle().Border(lipgloss.NormalBorder(), true, false)
-	// sentPromptStyle marks prompts already sent, so they stand out when scrolling back.
-	sentPromptStyle = lipgloss.NewStyle().Reverse(true).Bold(true).Padding(0, 1)
 )
 
 // markdownStyles returns the monochrome style replies are rendered with: the plain notty style,
