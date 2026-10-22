@@ -40,3 +40,16 @@ func TestReplyTextShowsTokenUsage(t *testing.T) {
 		t.Fatalf("replyText = %q, want it to end with the token usage", got)
 	}
 }
+
+func TestRenderMarkdownStylesInsteadOfSymbols(t *testing.T) {
+	got := renderMarkdown("# Title\n\n**bold** and *italic*")
+
+	for _, symbol := range []string{"#", "**", "*italic*"} {
+		if strings.Contains(got, symbol) {
+			t.Fatalf("renderMarkdown = %q, want no %q", got, symbol)
+		}
+	}
+	if !strings.Contains(got, "\x1b[1mbold") || !strings.Contains(got, "\x1b[3mitalic") {
+		t.Fatalf("renderMarkdown = %q, want bold and italic styling", got)
+	}
+}

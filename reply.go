@@ -36,10 +36,19 @@ func replyText(reply replyMsg) string {
 	if reply.err != nil {
 		return errorStyle.Render(fmt.Sprintf("error: %v", reply.err))
 	}
-	text := reply.reply.Text
-	if rendered, err := glamour.Render(text, markdownStyle); err == nil {
-		text = rendered
-	}
 	usage := fmt.Sprintf("%d in · %d out", reply.reply.InputTokens, reply.reply.OutputTokens)
-	return text + "\n" + hintStyle.Render(usage)
+	return renderMarkdown(reply.reply.Text) + "\n" + hintStyle.Render(usage)
+}
+
+// renderMarkdown returns the text rendered with the monochrome Markdown style, or unchanged if it cannot be rendered.
+//   - text: the Markdown to render.
+func renderMarkdown(text string) string {
+	renderer, err := glamour.NewTermRenderer(glamour.WithStyles(markdownStyles()))
+	if err != nil {
+		return text
+	}
+	if rendered, err := renderer.Render(text); err == nil {
+		return rendered
+	}
+	return text
 }

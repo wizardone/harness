@@ -104,6 +104,14 @@ func TestRenderPromptAreaDrawsLinesAboveAndBelow(t *testing.T) {
 	}
 }
 
+func TestRenderSentPromptPadsTheMarkedPrompt(t *testing.T) {
+	want := " " + promptMarker + "hi "
+
+	if got := renderSentPrompt("hi"); got != want {
+		t.Fatalf("renderSentPrompt = %q, want %q", got, want)
+	}
+}
+
 func TestNavigateMovesAndWraps(t *testing.T) {
 	menu := optionMenu{open: true}.navigate("up")
 

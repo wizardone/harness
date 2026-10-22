@@ -78,7 +78,7 @@ func (chat chatModel) submit() (tea.Model, tea.Cmd) {
 		return chat, tea.Quit
 	}
 	chat.thinking = true
-	return chat, tea.Sequence(tea.Println(chat.input.Prompt+prompt), send(chat.client, chat.history, prompt))
+	return chat, tea.Sequence(tea.Println(renderSentPrompt(prompt)), send(chat.client, chat.history, prompt))
 }
 
 // updateInput passes the message to the prompt, for typing and cursor blinking.
@@ -95,13 +95,19 @@ func (chat chatModel) View() string {
 		return hintStyle.Render("Bye...") + "\n"
 	}
 	if chat.thinking {
-		return hintStyle.Render("Thinking...") + "\n"
+		return renderPromptArea(hintStyle.Render("Thinking..."), chat.width)
 	}
 	prompt := renderPromptArea(chat.input.View(), chat.width)
 	if chat.menu.open {
 		return prompt + "\n" + renderOptions(chat.menu.cursor)
 	}
 	return prompt
+}
+
+// renderSentPrompt returns a sent prompt in reverse video, so it stands out when scrolling back.
+//   - prompt: the text that was sent.
+func renderSentPrompt(prompt string) string {
+	return sentPromptStyle.Render(promptMarker + prompt)
 }
 
 // renderPromptArea returns the prompt with a line above and below it.
