@@ -19,14 +19,17 @@ var (
 )
 
 // markdownStyles returns the monochrome style replies are rendered with: the plain notty style,
-// with bold, italics, headings and inline code shown as text styles instead of Markdown symbols.
+// with bold, italics, strikethrough, headings and inline code shown as text styles instead of Markdown symbols.
 func markdownStyles() ansi.StyleConfig {
 	style := styles.NoTTYStyleConfig
-	bold, italic := true, true
+	bold, italic, crossedOut := true, true, true
 	style.Strong = ansi.StylePrimitive{Bold: &bold}
 	style.Emph = ansi.StylePrimitive{Italic: &italic}
+	style.Strikethrough = ansi.StylePrimitive{CrossedOut: &crossedOut}
 	style.Heading.Bold = &bold
-	style.H1.Prefix, style.H2.Prefix, style.H3.Prefix = "", "", ""
+	for _, heading := range []*ansi.StyleBlock{&style.H1, &style.H2, &style.H3, &style.H4, &style.H5, &style.H6} {
+		heading.Prefix = ""
+	}
 	style.Code = ansi.StyleBlock{StylePrimitive: ansi.StylePrimitive{Bold: &bold}}
 	return style
 }

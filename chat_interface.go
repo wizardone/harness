@@ -117,7 +117,7 @@ func renderPromptArea(prompt string, width int) string {
 	return promptAreaStyle.Width(width).Render(prompt)
 }
 
-var options = []string{"Provider", "Model", "Quit"}
+var options = []string{"Provider", "Model", "History", "Quit"}
 
 // optionMenu holds whether the options list is shown and which option is highlighted.
 type optionMenu struct {

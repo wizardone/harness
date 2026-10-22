@@ -89,7 +89,7 @@ func TestEnterClosesOptionsWithoutSending(t *testing.T) {
 }
 
 func TestRenderOptionsHighlightsCursor(t *testing.T) {
-	want := "  " + options[0] + "\n" + promptMarker + options[1] + "\n" + "  " + options[2]
+	want := "  " + options[0] + "\n" + promptMarker + options[1] + "\n" + "  " + options[2] + "\n" + "  " + options[3]
 
 	if got := renderOptions(1); got != want {
 		t.Fatalf("renderOptions(1) = %q, want %q", got, want)
